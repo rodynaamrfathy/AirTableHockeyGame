@@ -111,16 +111,32 @@ namespace AirTableHockeyGame
         }
 
         private void Ballcanvas_MouseMove(object sender, MouseEventArgs e)
-        {
-            if (isDragged && draggedShape != null)
-            {
-                var mousePos = e.GetPosition(ballcanvas);
-                // Update the paddle's position directly when dragging
-                draggedShape.Position = new SlimDX.Vector3((float)(mousePos.X - draggedShape.Radius),
-                                                           (float)(mousePos.Y - draggedShape.Radius), 0);
-                renderer.UpdateCanvas(draggedShape); // Redraw the paddle at the new position
-            }
-        }
+{
+    if (isDragged && draggedShape != null)
+    {
+        var mousePos = e.GetPosition(ballcanvas);
+
+        // Get the radius of the paddle (or any other dimensions you need)
+        float radius = draggedShape.Radius;
+
+        // Calculate the allowed boundaries (make sure to include radius)
+        float minX = radius;  // The left boundary, preventing it from going off the canvas
+        float maxX = (float)ballcanvas.ActualWidth - radius; // The right boundary
+
+        float minY = radius; // The top boundary
+        float maxY = (float)ballcanvas.ActualHeight - radius; // The bottom boundary
+
+        // Ensure the paddle position stays within the boundaries
+        float newX = (float)Math.Max(minX, Math.Min(mousePos.X, maxX)) - radius;
+        float newY = (float)Math.Max(minY, Math.Min(mousePos.Y, maxY)) - radius;
+
+        // Update the paddle's position with the restricted values
+        draggedShape.Position = new SlimDX.Vector3(newX, newY, 0);
+
+        // Redraw the paddle at the new position
+        renderer.UpdateCanvas(draggedShape);
+    }
+}
 
         private void GameLoop()
         {
