@@ -8,7 +8,46 @@
         Title="MainWindow" Height="625" Width="300">
     <Grid>
         <Canvas Name="ballcanvas" Grid.ColumnSpan="2">
-            <!-- Ball will be added here programmatically -->
+            <!-- Center line -->
+            <Rectangle Fill="Red" Height="5" Width="300" Canvas.Left="0" Canvas.Top="300" />
+
+            <!-- Upper line -->
+            <Rectangle Fill="Blue" Height="5" Width="300" Canvas.Left="0" Canvas.Top="200" />
+
+            <!-- Bottom line -->
+            <Rectangle Fill="Blue" Height="5" Width="300" Canvas.Left="0" Canvas.Top="400" />
+
+            <!-- Center Circle -->
+            <Ellipse Stroke="Red" StrokeThickness="5" Width="100" Height="100"
+                     Canvas.Left="100" Canvas.Top="250" />
+
+
+            <!-- Scores -->
+            <TextBlock Text="0" Name="PlayerTwoScore" FontSize="35" Canvas.Left="5" Canvas.Top="250"/>
+            <TextBlock Text="0" Name="PlayerOneScore" FontSize="35" Canvas.Left="5" Canvas.Top="300"/>
+
+            <!-- Goals -->
+            <Rectangle Name="PlayerTwoGoal" Fill="Blue" Width="100" Height="20" Canvas.Left="100" Canvas.Top="0" />
+            <Rectangle Name="PlayerOneGoal" Fill="Blue" Width="100" Height="20" Canvas.Left="100" Canvas.Top="565" />
+
+            <!-- Player 2 - Paddle Position 2 -->
+            <Ellipse Fill="Red" Width="20" Height="20" Canvas.Left="45" Canvas.Top="85" />
+            <Ellipse Stroke="Red" StrokeThickness="5" Width="70" Height="70" Canvas.Left="20" Canvas.Top="60" />
+
+            <!-- Player 2  - Paddle Position 1 -->
+            <Ellipse Fill="Red" Width="20" Height="20" Canvas.Left="235" Canvas.Top="85" />
+            <Ellipse Stroke="Red" StrokeThickness="5" Width="70" Height="70" Canvas.Left="210" Canvas.Top="60" />
+
+            <!-- Player 1 - Paddle Position 1 -->
+            <Ellipse Fill="Red" Width="20" Height="20" Canvas.Left="45" Canvas.Top="475" />
+            <Ellipse Stroke="Red" StrokeThickness="5" Width="70" Height="70" Canvas.Left="20" Canvas.Top="450" />
+
+            <!-- Player 1 - Paddle Position 2 -->
+            <Ellipse Fill="Red" Width="20" Height="20" Canvas.Left="235" Canvas.Top="475" />
+            <Ellipse Stroke="Red" StrokeThickness="5" Width="70" Height="70" Canvas.Left="210" Canvas.Top="450" />
+
+
+
         </Canvas>
     </Grid>
 </Window>

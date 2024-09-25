@@ -13,19 +13,19 @@ namespace AirTableHockeyGame
 {
     internal class Engine
     {
-        private List<Shapes> shapes;
+        private List<Ball> shapes;
 
         public Engine()
         {
-            shapes = new List<Shapes>();
+            shapes = new List<Ball>();
         }
 
-        public void AddShape(Shapes shape)
+        public void AddShape(Ball shape)
         {
             shapes.Add(shape);
         }
 
-        public Shapes GetShapeFromDrawing(Shape drawingShape)
+        public Ball GetShapeFromDrawing(Shape drawingShape)
         {
             return shapes.FirstOrDefault(s => s.DrawingShape == drawingShape);
         }

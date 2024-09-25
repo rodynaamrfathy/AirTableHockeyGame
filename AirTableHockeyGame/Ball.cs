@@ -1,8 +1,4 @@
-﻿using AirTableHockeyGame;
-using SlimDX;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿using SlimDX;
 using System.Drawing;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -10,36 +6,40 @@ using System.Windows.Shapes;
 
 namespace AirTableHockeyGame
 {
-    internal class Ball : Shapes
+    internal class Ball
     {
+        public Vector3 Position { get; set; }
+        public Vector3 Velocity { get; set; }
+        public float BouncingFactor { get; set; } = 0.7f;
+        public Shape DrawingShape { get; set; }
+        public float Mass { get; set; }
+        public bool IsMoving { get; set; }
+        public float Radius { get; set; }
 
-        public Ball(float mass, System.Drawing.Color color, float radius, Vector3 Pos) : base(mass, color)
+        public Ball(float mass, float radius)
         {
             // Set the initial position of the ball
             Velocity = new Vector3(0, 0, 0);
             Radius = radius;
-            Position = Pos;
-            DrawingShape = new Ellipse()
-            {
-                Width = Radius * 2,
-                Height = Radius * 2,
-                Fill = new SolidColorBrush(System.Windows.Media.Color.FromArgb(color.A, color.R, color.G, color.B)),
-                Stroke = Brushes.Black,
-                StrokeThickness = 1
-            };
+            Mass = mass;
         }
 
-        public void BallProjection(Vector3 axis, out float min, out float max)
+        public virtual void Faceoff() { }
+
+
+        public Vector3 FrictionForce()
         {
-            //// Normalize the axis
-            //axis = Vector3.Normalize(axis);
+            float frictionCoefficient = 0.1f;
+            return new Vector3(-frictionCoefficient * Velocity.X, 0, -frictionCoefficient * Velocity.Z);
+        }
 
-            // Project the ball's center onto the axis
-            float projection = Vector3.Dot(Position, axis);
-
-            // Ball projection interval is the projection +/- the radius
-            min = projection - Radius;
-            max = projection + Radius;
+        public List<Vector3> TotalForces()
+        {
+            List<Vector3> forces = new List<Vector3>
+            {
+                FrictionForce()
+            };
+            return forces;
         }
 
 
@@ -117,58 +117,9 @@ namespace AirTableHockeyGame
 
         }
 
-        public override void UpdatePosition(float deltaTime, float canvasHeight, float canvasWidth, bool IsMoving)
+        public virtual void UpdatePosition(float deltaTime, float canvasHeight, float canvasWidth, bool IsMoving)
         {
-            // Calculate the gravity force
-            Vector3 gravityForce = GravityForce();
-
-            // Update velocity based on gravity
-            Velocity += gravityForce * deltaTime / Mass;
-
-            // Update position based on velocity
-            Position += Velocity * deltaTime;
-
-            // Check if the shape hits the top of the canvas
-            if (Position.Y <= 0)
-            {
-                Position = new Vector3(Position.X, 0, Position.Z);
-                Velocity = new Vector3(Velocity.X, -Velocity.Y * BouncingFactor, Velocity.Z);
-            }
-
-            // Check if the shape hits the right edge of the canvas
-            if (Position.X + Radius * 2 >= canvasWidth)
-            {
-                Position = new Vector3(canvasWidth - Radius * 2, Position.Y, Position.Z);
-                Velocity = new Vector3(-Velocity.X * BouncingFactor, Velocity.Y, Velocity.Z);
-            }
-
-            // Check if the shape hits the left edge of the canvas
-            if (Position.X <= 0)
-            {
-                Position = new Vector3(0, Position.Y, Position.Z);
-                Velocity = new Vector3(-Velocity.X * BouncingFactor, Velocity.Y, Velocity.Z);
-            }
-
-            // Check if the shape hits the bottom of the canvas
-            if (Position.Y + Radius * 2 >= canvasHeight)
-            {
-                Position = new Vector3(Position.X, canvasHeight - Radius * 2, Position.Z);
-                Velocity = new Vector3(Velocity.X, -Velocity.Y * BouncingFactor, Velocity.Z);
-
-                // If the absolute value of velocity is small, stop the shape
-                if (Math.Abs(Velocity.Y) < 1 && Math.Abs(Velocity.X) < 1)
-                {
-                    IsMoving = false; // Assuming there's an IsMoving property in Shapes
-                    Velocity = Vector3.Zero;
-                }
-            }
-
-            // Update the drawing shape position if it's not null
-            if (this.DrawingShape != null)
-            {
-                Canvas.SetTop(DrawingShape, Position.Y);
-                Canvas.SetLeft(DrawingShape, Position.X);
-            }
+            
         }
     }
 }

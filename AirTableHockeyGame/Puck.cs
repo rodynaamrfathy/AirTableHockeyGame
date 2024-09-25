@@ -6,15 +6,49 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Controls;
+using System.Windows.Media.Effects;
+using System.Windows.Media;
+using System.Windows.Shapes;
 
 namespace AirTableHockeyGame
 {
     internal class Puck : Ball
     {
-        public Puck(float mass, Color color, float radius, Vector3 Pos) : base(mass, color, radius, Pos)
-        {
 
+        public Puck(float mass, float radius) : base(mass, radius)
+        {
+            DrawingShape = CreatePuck();
+            Faceoff();
         }
+
+        private Ellipse CreatePuck()
+        {
+            var puck = new Ellipse
+            {
+                Fill = new SolidColorBrush(Colors.Black),
+                Width = 40,
+                Height = 40,
+                Effect = new DropShadowEffect
+                {
+                    Color = Colors.Black,
+                    Direction = 270,
+                    ShadowDepth = 3,
+                    BlurRadius = 5,
+                    Opacity = 0.5
+                }
+            };
+            Canvas.SetLeft(puck, 130); // Set initial position
+            Canvas.SetTop(puck, 280);
+            return puck;
+        }
+        
+        public override void Faceoff()
+        {
+            Position = new Vector3(130, 280, 0);
+            Canvas.SetTop(DrawingShape, Position.Y);
+            Canvas.SetLeft(DrawingShape, Position.X);
+        }
+        
         public override void UpdatePosition(float deltaTime, float canvasHeight, float canvasWidth, bool IsMoving)
         {
             // Update position based on velocity
@@ -50,7 +84,7 @@ namespace AirTableHockeyGame
                 // If the absolute value of velocity is small, stop the shape
                 if (Math.Abs(Velocity.Y) < 1 && Math.Abs(Velocity.X) < 1)
                 {
-                    IsMoving = false; // Assuming there's an IsMoving property in Shapes
+                    IsMoving = false; // Assuming there's an IsMoving property in Ball
                     Velocity = Vector3.Zero;
                 }
             }

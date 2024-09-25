@@ -19,18 +19,18 @@ namespace AirTableHockeyGame
             this.canvas = canvas;
         }
 
-        public void AddShapeToCanvas(Shapes shape)
+        public void AddShapeToCanvas(Ball shape)
         {
             canvas.Children.Add(shape.DrawingShape);
         }
 
-        public void UpdateCanvas(Shapes shape)
+        public void UpdateCanvas(Ball shape)
         {
             Canvas.SetLeft(shape.DrawingShape, shape.Position.X);
             Canvas.SetTop(shape.DrawingShape, shape.Position.Y);
         }
 
-        public void SetInitialShapePosition(Shapes shape)
+        public void SetInitialShapePosition(Ball shape)
         {
             Canvas.SetLeft(shape.DrawingShape, (float)0.5 * (canvas.ActualWidth + shape.Radius));
             Canvas.SetTop(shape.DrawingShape, (float)canvas.ActualHeight - shape.Radius);
@@ -42,7 +42,7 @@ namespace AirTableHockeyGame
             {
                 if (child is Shape drawingShape)
                 {
-                    var shape = canvas.Children.OfType<Shapes>().FirstOrDefault(s => s.DrawingShape == drawingShape);
+                    var shape = canvas.Children.OfType<Ball>().FirstOrDefault(s => s.DrawingShape == drawingShape);
                     if (shape != null)
                     {
                         UpdateCanvas(shape);

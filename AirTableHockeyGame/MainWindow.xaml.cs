@@ -6,6 +6,7 @@ using System.Windows;
 using SlimDX;
 using System.Numerics;
 using System.Windows.Controls;
+using System.Reflection.Metadata;
 
 namespace AirTableHockeyGame
 {
@@ -15,7 +16,7 @@ namespace AirTableHockeyGame
         private Renderer renderer;
         private bool isDragged = false;
         private Stopwatch stopwatch;
-        private Shapes draggedShape;
+        private Ball draggedShape;
         private Point initialMousePosition;
         private DateTime initialMouseDownTime;
 
@@ -27,20 +28,20 @@ namespace AirTableHockeyGame
             stopwatch = new Stopwatch();
 
             // Create shapes
-            CreatePuck(new Puck(4.0f, System.Drawing.Color.Black, 20f, new SlimDX.Vector3(125f, 200f, 0)));
-            CreatePlayerPaddel(new Paddel(2.0f, System.Drawing.Color.Green, 30f, new SlimDX.Vector3(125f, 300f, 0)));
-            CreateOnlinePlayerPaddel(new Paddel(2.0f, System.Drawing.Color.Green, 30f, new SlimDX.Vector3(125f, 100f, 0)));
+            CreatePuck(new Puck(4.0f, 20f));
+            CreatePlayerPaddel(new Paddle(2.0f, 30f));
+            //CreateOnlinePlayerPaddel(new Paddle(2.0f, 30f));
 
             // Start the free fall simulation
-            Task.Run(() => StartFreeFall());
+            Task.Run(() => GameLoop());
         }
-        private void CreatePuck(Shapes shape)
+        private void CreatePuck(Ball shape)
         {
             engine.AddShape(shape);
             renderer.AddShapeToCanvas(shape);
             renderer.UpdateCanvas(shape);
         }
-        private void CreatePlayerPaddel(Shapes shape)
+        private void CreatePlayerPaddel(Ball shape)
         {
             shape.DrawingShape.MouseLeftButtonDown += Shape_MouseLeftButtonDown;
             shape.DrawingShape.MouseLeftButtonUp += Shape_MouseLeftButtonUp;
@@ -50,7 +51,7 @@ namespace AirTableHockeyGame
             renderer.AddShapeToCanvas(shape);
             renderer.UpdateCanvas(shape);
         }
-        private void CreateOnlinePlayerPaddel(Shapes shape)
+        private void CreateOnlinePlayerPaddel(Ball shape)
         {
             engine.AddShape(shape);
             renderer.AddShapeToCanvas(shape);
@@ -84,7 +85,6 @@ namespace AirTableHockeyGame
 
                 draggedShape.Velocity = new SlimDX.Vector3(velocityX / 10, velocityY / 10, 0);
                 stopwatch.Start(); // Start the stopwatch for physics update
-                //Task.Run(() => StartFreeFall()); // i do not want this line here i want it to start running when the game starts
             }
         }
 
@@ -93,13 +93,13 @@ namespace AirTableHockeyGame
             if (isDragged && draggedShape != null)
             {
                 var mousePos = e.GetPosition(ballcanvas);
-                draggedShape.Position = new SlimDX.Vector3((float)(mousePos.X - draggedShape.DrawingShape.Width / 2),
-                                                    (float)(mousePos.Y - draggedShape.DrawingShape.Height / 2), 0);
+                draggedShape.Position = new SlimDX.Vector3((float)(mousePos.X - draggedShape.Radius / 2),
+                                                    (float)(mousePos.Y - draggedShape.Radius / 2), 0);
                 renderer.UpdateCanvas(draggedShape); // Update the canvas immediately
             }
         }
 
-        private void StartFreeFall()
+        private void GameLoop()
         {
             while (true) // Continuously run the simulation
             {
@@ -115,7 +115,7 @@ namespace AirTableHockeyGame
                     });
                 }
 
-                Thread.Sleep(10); // Control update frequency
+                Thread.Sleep(5); // Control update frequency
             }
         }
 
