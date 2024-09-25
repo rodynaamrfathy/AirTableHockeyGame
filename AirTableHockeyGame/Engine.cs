@@ -13,7 +13,7 @@ namespace AirTableHockeyGame
 {
     internal class Engine
     {
-        private List<Ball> shapes;
+        public List<Ball> shapes;
 
         public Engine()
         {

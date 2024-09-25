@@ -66,9 +66,30 @@ namespace AirTableHockeyGame
                 draggedShape.DrawingShape.CaptureMouse();
                 initialMousePosition = e.GetPosition(ballcanvas);
                 initialMouseDownTime = DateTime.Now;
+
+                // Get the position of the puck
+                var puckPosition = engine.shapes[0].Position; // Assume this method gets the puck's current position
+
+                // Calculate the direction vector towards the puck
+                var directionX = puckPosition.X - initialMousePosition.X;
+                var directionY = puckPosition.Y - initialMousePosition.Y;
+
+                // Normalize the direction vector
+                var length = Math.Sqrt(directionX * directionX + directionY * directionY);
+                if (length > 0)
+                {
+                    directionX /= length;
+                    directionY /= length;
+                }
+
+                // Set the velocity towards the puck (adjust speed factor as needed)
+                float speed = 10.0f; // You can adjust this value
+                draggedShape.Velocity = new SlimDX.Vector3((float)(directionX * speed), (float)(directionY * speed), 0);
+
                 stopwatch.Reset();
             }
         }
+
 
         private void Shape_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
