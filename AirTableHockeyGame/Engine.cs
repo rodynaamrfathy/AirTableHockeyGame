@@ -1,55 +1,47 @@
-﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Controls;
-using System.Windows.Shapes;
-using AirTableHockeyGame;
 using SlimDX;
 
 namespace AirTableHockeyGame
 {
-    internal class Engine
+    public class Engine
     {
-        public List<Ball> shapes;
-
-        public Engine()
-        {
-            shapes = new List<Ball>();
-        }
-
+        private List<Ball> shapes = new List<Ball>();
+        
         public void AddShape(Ball shape)
         {
             shapes.Add(shape);
         }
 
-        public Ball GetShapeFromDrawing(Shape drawingShape)
+        public void Update(float deltaTime, float canvasHeight, float canvasWidth)
         {
-            return shapes.FirstOrDefault(s => s.DrawingShape == drawingShape);
+            foreach (var shape in shapes)
+            {
+                shape.UpdatePosition(deltaTime, canvasHeight, canvasWidth);
+            }
         }
 
-        public void Update(float deltaTime, float canvasHeight, float canvasWidth, bool IsMoving)
+        public Paddle GetPaddle()
         {
-            bool AreCollided;
-            foreach (var check in shapes)
+            foreach (var shape in shapes)
             {
-                foreach (var shape in shapes)
+                if (shape is Paddle paddle)
                 {
-                    shape.UpdatePosition(deltaTime, canvasHeight, canvasWidth, IsMoving);
-
-                    if (check != shape && check is Ball checkBall && shape is Ball shapeBall)
-                    {
-                        AreCollided = checkBall.AreCollidedBallToBall(shapeBall);
-                        if (AreCollided)
-                        {
-                            checkBall.HandleOverlap(shapeBall);
-                            checkBall.ResolveBallToBallCollison(shapeBall);
-                        }
-                    }
+                    return paddle;
                 }
             }
+            return null; // If no paddle is found
+        }
+
+        public Puck GetPuck()
+        {
+            foreach (var shape in shapes)
+            {
+                if (shape is Puck puck)
+                {
+                    return puck;
+                }
+            }
+            return null; // If no puck is found
         }
     }
 }
