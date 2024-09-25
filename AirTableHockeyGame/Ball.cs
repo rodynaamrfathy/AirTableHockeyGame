@@ -28,14 +28,19 @@ namespace AirTableHockeyGame
 
         public virtual void UpdatePosition(float deltaTime, float canvasHeight, float canvasWidth)
         {
+            UpdatePosition(deltaTime, canvasHeight, canvasWidth, Velocity);
+        }
+
+        public virtual void UpdatePosition(float deltaTime, float canvasHeight, float canvasWidth, Vector3 velocity)
+        {
             Position += Velocity * deltaTime;
 
             // Keep the ball inside the canvas
             if (Position.X < 0 || Position.X + Radius * 2 > canvasWidth)
-                Velocity.X = -Velocity.X; // Bounce off the wall
+                Velocity = new Vector3(-Velocity.X, Velocity.Y, 0); // Bounce off the wall
 
-            if (Position.Y < 0 || Position.Y + Radius * 2 > canvasHeight)
-                Velocity.Y = -Velocity.Y; // Bounce off the wall
+            if (Velocity.Y < 0 || Position.Y + Radius * 2 > canvasHeight)
+                Velocity = new Vector3(Velocity.X, -Velocity.X, 0); // Bounce off the wall
 
             // Update the DrawingShape's position
             Canvas.SetLeft(DrawingShape, Position.X);

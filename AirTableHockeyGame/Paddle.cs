@@ -5,7 +5,7 @@ using System.Windows.Shapes;
 
 namespace AirTableHockeyGame
 {
-    internal class Paddle : Ball
+    public class Paddle : Ball
     {
         public Paddle(float mass, float radius) : base(mass, radius)
         {
@@ -30,12 +30,10 @@ namespace AirTableHockeyGame
         public void RestrictMovement(float canvasHeight, float canvasWidth)
         {
             // Restrict paddle to the playing field
-            if (Position.X < 0) Position.X = 0;
-            if (Position.X + Radius * 2 > canvasWidth) Position.X = canvasWidth - Radius * 2;
-
-            if (Position.Y < 0) Position.Y = 0;
-            if (Position.Y + Radius * 2 > canvasHeight) Position.Y = canvasHeight - Radius * 2;
-
+            if (Position.X < 0) Position = new Vector3(0, Position.Y, 0);
+            if (Position.X + Radius * 2 > canvasWidth) Position = new Vector3(canvasWidth - Radius * 2, Position.Y, 0);
+            if (Position.Y < 0) Position = new Vector3(Position.X, 0, 0);
+            if (Position.Y + Radius * 2 > canvasHeight) Position = new Vector3(Position.X, canvasHeight - Radius * 2, 0);
             Canvas.SetLeft(DrawingShape, Position.X);
             Canvas.SetTop(DrawingShape, Position.Y);
         }

@@ -5,7 +5,7 @@ using System.Windows.Shapes;
 
 namespace AirTableHockeyGame
 {
-    internal class Puck : Ball
+    public class Puck : Ball
     {
         public Puck(float mass, float radius) : base(mass, radius)
         {

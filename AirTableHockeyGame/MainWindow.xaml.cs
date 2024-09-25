@@ -53,17 +53,17 @@ namespace AirTableHockeyGame
 
         private bool CheckCollision(Paddle paddle, Puck puck)
         {
-            float distance = Vector3.Distance(paddle.Position, puck.Position);
+            float distance = SlimDX.Vector3.Distance(paddle.Position, puck.Position);
             return distance <= paddle.Radius + puck.Radius;
         }
 
         private void ApplyImpulse(Paddle paddle, Puck puck)
         {
             // Calculate relative velocity
-            Vector3 relativeVelocity = paddle.Velocity - puck.Velocity;
+            SlimDX.Vector3 relativeVelocity = paddle.Velocity - puck.Velocity;
 
             // Calculate impulse based on masses and relative velocity
-            Vector3 impulse = (2 * paddle.Mass / (paddle.Mass + puck.Mass)) * relativeVelocity;
+            SlimDX.Vector3 impulse = (2 * paddle.Mass / (paddle.Mass + puck.Mass)) * relativeVelocity;
 
             // Apply impulse to the puck's velocity
             puck.Velocity += impulse;
