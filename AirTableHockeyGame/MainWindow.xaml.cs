@@ -4,7 +4,6 @@ using System.Windows.Input;
 using System.Windows.Shapes;
 using System.Windows;
 using SlimDX;
-using System.Numerics;
 using System.Windows.Controls;
 
 namespace AirTableHockeyGame
@@ -13,6 +12,9 @@ namespace AirTableHockeyGame
     {
         private Engine engine = new Engine();
         private Renderer renderer;
+        private bool isDragged = false;
+        private Paddle draggedPaddle;
+        private Point initialMousePosition;
         private Stopwatch stopwatch;
 
         public MainWindow()
@@ -26,19 +28,23 @@ namespace AirTableHockeyGame
             CreatePlayerPaddle(new Paddle(2.0f, 30f));
             CreateOnlinePlayerPaddle(new Paddle(2.0f, 30f));
 
-            // Start the simulation
+            // Start the game loop
             Task.Run(() => GameLoop());
         }
 
-        private void CreatePuck(Puck puck)
+        private void CreatePuck(Ball shape)
         {
-            engine.AddShape(puck);
-            renderer.AddShapeToCanvas(puck);
-            renderer.UpdateCanvas(puck);
+            engine.AddShape(shape);
+            renderer.AddShapeToCanvas(shape);
+            renderer.UpdateCanvas(shape);
         }
 
         private void CreatePlayerPaddle(Paddle paddle)
         {
+            paddle.DrawingShape.MouseLeftButtonDown += Shape_MouseLeftButtonDown;
+            paddle.DrawingShape.MouseLeftButtonUp += Shape_MouseLeftButtonUp;
+            ballcanvas.MouseMove += Ballcanvas_MouseMove;
+
             engine.AddShape(paddle);
             renderer.AddShapeToCanvas(paddle);
             renderer.UpdateCanvas(paddle);
@@ -51,22 +57,56 @@ namespace AirTableHockeyGame
             renderer.UpdateCanvas(paddle);
         }
 
-        private bool CheckCollision(Paddle paddle, Puck puck)
+        // Event: Mouse down on paddle
+        private void Shape_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            float distance = SlimDX.Vector3.Distance(paddle.Position, puck.Position);
-            return distance <= paddle.Radius + puck.Radius;
+            if (sender is Ellipse paddleShape)
+            {
+                draggedPaddle = engine.GetPaddle(); // Get the player's paddle
+                isDragged = true;
+                initialMousePosition = e.GetPosition(ballcanvas); // Get initial mouse position
+                paddleShape.CaptureMouse(); // Capture the mouse to keep receiving events
+            }
         }
 
-        private void ApplyImpulse(Paddle paddle, Puck puck)
+        // Event: Mouse up, stop dragging
+        private void Shape_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
-            // Calculate relative velocity
-            SlimDX.Vector3 relativeVelocity = paddle.Velocity - puck.Velocity;
+            if (isDragged && draggedPaddle != null)
+            {
+                isDragged = false;
+                draggedPaddle = null;
+                if (sender is Ellipse paddleShape)
+                {
+                    paddleShape.ReleaseMouseCapture(); // Release mouse capture
+                }
+            }
+        }
 
-            // Calculate impulse based on masses and relative velocity
-            SlimDX.Vector3 impulse = (2 * paddle.Mass / (paddle.Mass + puck.Mass)) * relativeVelocity;
+        // Event: Mouse movement to move the paddle
+        private void Ballcanvas_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (isDragged && draggedPaddle != null)
+            {
+                Point currentMousePosition = e.GetPosition(ballcanvas);
+                Vector delta = currentMousePosition - initialMousePosition; // Calculate the movement delta
 
-            // Apply impulse to the puck's velocity
-            puck.Velocity += impulse;
+                // Update paddle position based on mouse movement
+                draggedPaddle.Position = new Vector3(
+                    (float)(draggedPaddle.Position.X + delta.X),
+                    (float)(draggedPaddle.Position.Y + delta.Y),
+                    0
+                );
+
+                // Restrict movement to the canvas bounds
+                draggedPaddle.RestrictMovement((float)ballcanvas.ActualHeight, (float)ballcanvas.ActualWidth);
+
+                // Update initial mouse position for next move
+                initialMousePosition = currentMousePosition;
+
+                // Update the canvas to reflect paddle's new position
+                renderer.UpdateCanvas(draggedPaddle);
+            }
         }
 
         private void GameLoop()
@@ -74,24 +114,13 @@ namespace AirTableHockeyGame
             stopwatch.Start();
             while (true) // Continuously run the simulation
             {
+                float deltaTime = (float)stopwatch.Elapsed.TotalSeconds;
+                stopwatch.Restart();
+
                 Dispatcher.Invoke(() =>
                 {
-                    float deltaTime = (float)stopwatch.Elapsed.TotalSeconds * 10;
-                    stopwatch.Restart();
-
-                    // Update physics and check for collision
+                    // Update physics and check for collisions
                     engine.Update(deltaTime, (float)ballcanvas.ActualHeight, (float)ballcanvas.ActualWidth);
-
-                    Paddle playerPaddle = engine.GetPaddle();
-                    Puck puck = engine.GetPuck();
-
-                    if (CheckCollision(playerPaddle, puck))
-                    {
-                        ApplyImpulse(playerPaddle, puck); // Apply the impulse on collision
-                    }
-
-                    puck.ApplyFriction(deltaTime);
-
                     renderer.UpdateCanvas(); // Redraw the canvas to reflect changes
                 });
 
