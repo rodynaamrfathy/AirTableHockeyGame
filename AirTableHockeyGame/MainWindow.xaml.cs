@@ -4,7 +4,9 @@ using System.Windows.Input;
 using System.Windows.Shapes;
 using System.Windows;
 using SlimDX;
+using System.Numerics;
 using System.Windows.Controls;
+using System.Reflection.Metadata;
 
 namespace AirTableHockeyGame
 {
@@ -13,9 +15,11 @@ namespace AirTableHockeyGame
         private Engine engine = new Engine();
         private Renderer renderer;
         private bool isDragged = false;
-        private Paddle draggedPaddle;
-        private Point initialMousePosition;
         private Stopwatch stopwatch;
+        private Ball draggedShape;
+        private Point initialMousePosition;
+        private DateTime initialMouseDownTime;
+
 
         public MainWindow()
         {
@@ -25,107 +29,118 @@ namespace AirTableHockeyGame
 
             // Create shapes
             CreatePuck(new Puck(4.0f, 20f));
-            CreatePlayerPaddle(new Paddle(2.0f, 30f));
-            CreateOnlinePlayerPaddle(new Paddle(2.0f, 30f));
+            CreatePlayerPaddel(new Paddle(2.0f, 30f));
+            //CreateOnlinePlayerPaddel(new Paddle(2.0f, 30f));
 
-            // Start the game loop
+            // Start the free fall simulation
             Task.Run(() => GameLoop());
         }
-
         private void CreatePuck(Ball shape)
         {
             engine.AddShape(shape);
             renderer.AddShapeToCanvas(shape);
             renderer.UpdateCanvas(shape);
         }
-
-        private void CreatePlayerPaddle(Paddle paddle)
+        private void CreatePlayerPaddel(Ball shape)
         {
-            paddle.DrawingShape.MouseLeftButtonDown += Shape_MouseLeftButtonDown;
-            paddle.DrawingShape.MouseLeftButtonUp += Shape_MouseLeftButtonUp;
+            shape.DrawingShape.MouseLeftButtonDown += Shape_MouseLeftButtonDown;
+            shape.DrawingShape.MouseLeftButtonUp += Shape_MouseLeftButtonUp;
             ballcanvas.MouseMove += Ballcanvas_MouseMove;
 
-            engine.AddShape(paddle);
-            renderer.AddShapeToCanvas(paddle);
-            renderer.UpdateCanvas(paddle);
+            engine.AddShape(shape);
+            renderer.AddShapeToCanvas(shape);
+            renderer.UpdateCanvas(shape);
         }
-
-        private void CreateOnlinePlayerPaddle(Paddle paddle)
+        private void CreateOnlinePlayerPaddel(Ball shape)
         {
-            engine.AddShape(paddle);
-            renderer.AddShapeToCanvas(paddle);
-            renderer.UpdateCanvas(paddle);
+            engine.AddShape(shape);
+            renderer.AddShapeToCanvas(shape);
+            renderer.UpdateCanvas(shape);
         }
-
-        // Event: Mouse down on paddle
         private void Shape_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            if (sender is Ellipse paddleShape)
+            draggedShape = engine.GetShapeFromDrawing(sender as Shape);
+            if (draggedShape != null)
             {
-                draggedPaddle = engine.GetPaddle(); // Get the player's paddle
                 isDragged = true;
-                initialMousePosition = e.GetPosition(ballcanvas); // Get initial mouse position
-                paddleShape.CaptureMouse(); // Capture the mouse to keep receiving events
+                draggedShape.DrawingShape.CaptureMouse();
+                initialMousePosition = e.GetPosition(ballcanvas);
+                initialMouseDownTime = DateTime.Now;
+
+                // Get the position of the puck
+                var puckPosition = engine.shapes[0].Position; // Assume this method gets the puck's current position
+
+                // Calculate the direction vector towards the puck
+                var directionX = puckPosition.X - initialMousePosition.X;
+                var directionY = puckPosition.Y - initialMousePosition.Y;
+
+                // Normalize the direction vector
+                var length = Math.Sqrt(directionX * directionX + directionY * directionY);
+                if (length > 0)
+                {
+                    directionX /= length;
+                    directionY /= length;
+                }
+
+                // Set the velocity towards the puck (adjust speed factor as needed)
+                float speed = 10.0f; // You can adjust this value
+                draggedShape.Velocity = new SlimDX.Vector3((float)(directionX * speed), (float)(directionY * speed), 0);
+
+                stopwatch.Reset();
             }
         }
 
-        // Event: Mouse up, stop dragging
+
         private void Shape_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
-            if (isDragged && draggedPaddle != null)
+            if (draggedShape != null && isDragged)
             {
                 isDragged = false;
-                draggedPaddle = null;
-                if (sender is Ellipse paddleShape)
-                {
-                    paddleShape.ReleaseMouseCapture(); // Release mouse capture
-                }
+                draggedShape.DrawingShape.ReleaseMouseCapture();
+                var finalMousePosition = e.GetPosition(ballcanvas);
+                var timeTaken = DateTime.Now - initialMouseDownTime;
+
+                // Calculate the velocity based on mouse movement and the time taken
+                var velocityX = (float)(finalMousePosition.X - initialMousePosition.X) / (float)timeTaken.TotalSeconds;
+                var velocityY = (float)(finalMousePosition.Y - initialMousePosition.Y) / (float)timeTaken.TotalSeconds;
+
+                // Set the paddle's velocity
+                draggedShape.Velocity = new SlimDX.Vector3(velocityX, velocityY, 0);
+                stopwatch.Start(); // Start the stopwatch for updating physics
             }
         }
 
-        // Event: Mouse movement to move the paddle
         private void Ballcanvas_MouseMove(object sender, MouseEventArgs e)
         {
-            if (isDragged && draggedPaddle != null)
+            if (isDragged && draggedShape != null)
             {
-                Point currentMousePosition = e.GetPosition(ballcanvas);
-                Vector delta = currentMousePosition - initialMousePosition; // Calculate the movement delta
-
-                // Update paddle position based on mouse movement
-                draggedPaddle.Position = new Vector3(
-                    (float)(draggedPaddle.Position.X + delta.X),
-                    (float)(draggedPaddle.Position.Y + delta.Y),
-                    0
-                );
-
-                // Restrict movement to the canvas bounds
-                draggedPaddle.RestrictMovement((float)ballcanvas.ActualHeight, (float)ballcanvas.ActualWidth);
-
-                // Update initial mouse position for next move
-                initialMousePosition = currentMousePosition;
-
-                // Update the canvas to reflect paddle's new position
-                renderer.UpdateCanvas(draggedPaddle);
+                var mousePos = e.GetPosition(ballcanvas);
+                // Update the paddle's position directly when dragging
+                draggedShape.Position = new SlimDX.Vector3((float)(mousePos.X - draggedShape.Radius),
+                                                           (float)(mousePos.Y - draggedShape.Radius), 0);
+                renderer.UpdateCanvas(draggedShape); // Redraw the paddle at the new position
             }
         }
 
         private void GameLoop()
         {
-            stopwatch.Start();
             while (true) // Continuously run the simulation
             {
-                float deltaTime = (float)stopwatch.Elapsed.TotalSeconds;
-                stopwatch.Restart();
-
-                Dispatcher.Invoke(() =>
+                if (draggedShape != null && !draggedShape.IsMoving)
                 {
-                    // Update physics and check for collisions
-                    engine.Update(deltaTime, (float)ballcanvas.ActualHeight, (float)ballcanvas.ActualWidth);
-                    renderer.UpdateCanvas(); // Redraw the canvas to reflect changes
-                });
+                    Dispatcher.Invoke(() =>
+                    {
+                        float deltaTime = (float)stopwatch.Elapsed.TotalSeconds * 10;
+                        stopwatch.Restart();
+                        // Update physics and check for collision
+                        engine.Update(deltaTime, (float)ballcanvas.ActualHeight, (float)ballcanvas.ActualWidth, true);
+                        renderer.UpdateCanvas(); // Redraw the canvas to reflect changes
+                    });
+                }
 
                 Thread.Sleep(5); // Control update frequency
             }
         }
+
     }
 }

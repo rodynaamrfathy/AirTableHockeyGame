@@ -1,47 +1,55 @@
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Controls;
+using System.Windows.Shapes;
+using AirTableHockeyGame;
 using SlimDX;
 
 namespace AirTableHockeyGame
 {
-    public class Engine
+    internal class Engine
     {
-        private List<Ball> shapes = new List<Ball>();
-        
+        public List<Ball> shapes;
+
+        public Engine()
+        {
+            shapes = new List<Ball>();
+        }
+
         public void AddShape(Ball shape)
         {
             shapes.Add(shape);
         }
 
-        public void Update(float deltaTime, float canvasHeight, float canvasWidth)
+        public Ball GetShapeFromDrawing(Shape drawingShape)
         {
-            foreach (var shape in shapes)
-            {
-                shape.UpdatePosition(deltaTime, canvasHeight, canvasWidth);
-            }
+            return shapes.FirstOrDefault(s => s.DrawingShape == drawingShape);
         }
 
-        public Paddle GetPaddle()
+        public void Update(float deltaTime, float canvasHeight, float canvasWidth, bool IsMoving)
         {
-            foreach (var shape in shapes)
+            bool AreCollided;
+            foreach (var check in shapes)
             {
-                if (shape is Paddle paddle)
+                foreach (var shape in shapes)
                 {
-                    return paddle;
-                }
-            }
-            return null; // If no paddle is found
-        }
+                    shape.UpdatePosition(deltaTime, canvasHeight, canvasWidth, IsMoving);
 
-        public Puck GetPuck()
-        {
-            foreach (var shape in shapes)
-            {
-                if (shape is Puck puck)
-                {
-                    return puck;
+                    if (check != shape && check is Ball checkBall && shape is Ball shapeBall)
+                    {
+                        AreCollided = checkBall.AreCollidedBallToBall(shapeBall);
+                        if (AreCollided)
+                        {
+                            checkBall.HandleOverlap(shapeBall);
+                            checkBall.ResolveBallToBallCollison(shapeBall);
+                        }
+                    }
                 }
             }
-            return null; // If no puck is found
         }
     }
 }
