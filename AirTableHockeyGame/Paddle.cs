@@ -1,6 +1,7 @@
 using SlimDX;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Media.Effects;
 using System.Windows.Shapes;
 
 namespace AirTableHockeyGame
@@ -20,7 +21,58 @@ namespace AirTableHockeyGame
             };
             Faceoff();
         }
+        private Canvas CreatePaddle()
+        {
+            var paddleMain = new Ellipse
+            {
+                Fill = new SolidColorBrush(Colors.Green),
+                StrokeThickness = 3,
+                Width = 50,
+                Height = 50,
+                Effect = new DropShadowEffect
+                {
+                    Color = Colors.Black,
+                    Direction = 270,
+                    ShadowDepth = 5,
+                    BlurRadius = 10,
+                    Opacity = 0.5
+                }
+            };
 
+            var paddleHandle = new Ellipse
+            {
+                Fill = new SolidColorBrush(Colors.Green),
+                Width = 15,
+                Height = 15,
+                Effect = new DropShadowEffect
+                {
+                    Color = Colors.Black,
+                    Direction = 270,
+                    ShadowDepth = 5,
+                    BlurRadius = 10,
+                    Opacity = 0.5
+                }
+            };
+
+            var paddleCanvas = new Canvas
+            {
+                Width = 50,
+                Height = 50
+            };
+
+            Canvas.SetLeft(paddleMain, -17);
+            Canvas.SetTop(paddleMain, -17);
+            paddleCanvas.Children.Add(paddleMain);
+
+            Canvas.SetLeft(paddleHandle, 0);
+            Canvas.SetTop(paddleHandle, 0);
+            paddleCanvas.Children.Add(paddleHandle);
+
+            Canvas.SetLeft(paddleCanvas, Position.X); // Set initial position for Paddle
+            Canvas.SetTop(paddleCanvas, Position.Y); // Set Y position based on the Paddle's position
+
+            return paddleCanvas;
+        }
         public override void Faceoff()
         {
             Position = new Vector3(142, 345, 0); // Starting position of the paddle
