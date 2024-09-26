@@ -25,8 +25,6 @@ namespace AirTableHockeyGame
             Mass = mass;
         }
 
-        public virtual void Faceoff() { }
-
 
         public Vector3 FrictionForce()
         {

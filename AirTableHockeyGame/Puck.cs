@@ -32,7 +32,7 @@ namespace AirTableHockeyGame
             return puck;
         }
 
-        public override void Faceoff()
+        public void Faceoff()
         {
             Position = new Vector3(130, 280, 0);
             Canvas.SetTop(DrawingShape, Position.Y);

@@ -20,7 +20,6 @@ namespace AirTableHockeyGame
         private Point initialMousePosition;
         private DateTime initialMouseDownTime;
 
-
         public MainWindow()
         {
             InitializeComponent();
@@ -29,8 +28,8 @@ namespace AirTableHockeyGame
 
             // Create shapes
             CreatePuck(new Puck(2.0f, 20f));
-            CreatePlayerPaddel(new Paddle(10.0f, 30f));
-            //CreateOnlinePlayerPaddel(new Paddle(2.0f, 30f));
+            CreatePlayerPaddel(new Paddle(10.0f, 30f, 120, 350));
+            CreateOnlinePlayerPaddel(new Paddle(10.0f, 30f, 120, 190));
 
             // Start the free fall simulation
             Task.Run(() => GameLoop());
@@ -66,6 +65,7 @@ namespace AirTableHockeyGame
                 draggedShape.DrawingShape.CaptureMouse();
                 initialMousePosition = e.GetPosition(ballcanvas);
                 initialMouseDownTime = DateTime.Now;
+
 
                 // Get the position of the puck
                 var puckPosition = engine.shapes[0].Position; // Assume this method gets the puck's current position
@@ -118,6 +118,7 @@ namespace AirTableHockeyGame
                 // Update the paddle's position directly when dragging
                 draggedShape.Position = new SlimDX.Vector3((float)(mousePos.X - draggedShape.Radius),
                                                            (float)(mousePos.Y - draggedShape.Radius), 0);
+                draggedShape.UpdatePosition(0.16f, (float)ballcanvas.ActualHeight, (float)ballcanvas.ActualWidth, true);
                 renderer.UpdateCanvas(draggedShape); // Redraw the paddle at the new position
             }
         }

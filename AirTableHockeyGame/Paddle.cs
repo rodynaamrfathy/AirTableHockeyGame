@@ -8,7 +8,7 @@ namespace AirTableHockeyGame
 {
     internal class Paddle : Ball
     {
-        public Paddle(float mass, float radius) : base(mass, radius)
+        public Paddle(float mass, float radius, float X, float Y) : base(mass, radius)
         {
             System.Drawing.Color color = System.Drawing.Color.Green;
             DrawingShape = new Ellipse()
@@ -19,7 +19,7 @@ namespace AirTableHockeyGame
                 Stroke = Brushes.Black,
                 StrokeThickness = 1
             };
-            Faceoff();
+            Faceoff(X, Y);
         }
         private Canvas CreatePaddle()
         {
@@ -73,9 +73,9 @@ namespace AirTableHockeyGame
 
             return paddleCanvas;
         }
-        public override void Faceoff()
+        public void Faceoff(float X, float Y)
         {
-            Position = new Vector3(142, 345, 0); // Starting position of the paddle
+            Position = new Vector3(X, Y, 0); // Starting position of the paddle
             Canvas.SetTop(DrawingShape, Position.Y);
             Canvas.SetLeft(DrawingShape, Position.X);
         }
