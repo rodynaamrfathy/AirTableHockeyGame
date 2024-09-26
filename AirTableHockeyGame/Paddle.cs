@@ -83,19 +83,19 @@ namespace AirTableHockeyGame
         public void RestrictMovement(float canvasHeight, float canvasWidth)
         {
             // Restrict movement vertically
-            if (Position.Y - Radius <= 280)
+            if (Position.Y - Radius <= 270)
             {
-                Position = new Vector3(Position.X, 280 + Radius, 0); // Restrict to player's half
+                Position = new Vector3(Position.X, 270 + Radius, 0); // Restrict to player's half
             }
-            else if (Position.Y + Radius >= canvasHeight)
+            else if (Position.Y + Radius - 30 >= canvasHeight)
             {
-                Position = new Vector3(Position.X, canvasHeight - Radius, 0);
+                Position = new Vector3(Position.X, canvasHeight - Radius - 30, 0);
             }
 
             // Restrict movement horizontally (left and right bounds)
-            if (Position.X <= 0)
+            if (Position.X <= - 30)
             {
-                Position = new Vector3(Radius, Position.Y, 0);
+                Position = new Vector3(Radius - 30, Position.Y, 0);
             }
             else if (Position.X + Radius * 2 >= canvasWidth)
             {

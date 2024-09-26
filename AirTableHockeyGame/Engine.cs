@@ -37,7 +37,8 @@ namespace AirTableHockeyGame
             {
                 foreach (var shape in shapes)
                 {
-                    shape.UpdatePosition(deltaTime, canvasHeight, canvasWidth, IsMoving);
+                    if(shape is Puck puck)
+                        puck.UpdatePosition(deltaTime, canvasHeight, canvasWidth, IsMoving);
 
                     if (check != shape && check is Ball checkBall && shape is Ball shapeBall)
                     {

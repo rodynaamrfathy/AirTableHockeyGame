@@ -28,8 +28,8 @@ namespace AirTableHockeyGame
             stopwatch = new Stopwatch();
 
             // Create shapes
-            CreatePuck(new Puck(4.0f, 20f));
-            CreatePlayerPaddel(new Paddle(2.0f, 30f));
+            CreatePuck(new Puck(2.0f, 20f));
+            CreatePlayerPaddel(new Paddle(10.0f, 30f));
             //CreateOnlinePlayerPaddel(new Paddle(2.0f, 30f));
 
             // Start the free fall simulation
@@ -83,7 +83,7 @@ namespace AirTableHockeyGame
                 }
 
                 // Set the velocity towards the puck (adjust speed factor as needed)
-                float speed = 10.0f; // You can adjust this value
+                float speed = 5.0f; 
                 draggedShape.Velocity = new SlimDX.Vector3((float)(directionX * speed), (float)(directionY * speed), 0);
 
                 stopwatch.Reset();

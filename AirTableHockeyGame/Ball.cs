@@ -1,5 +1,6 @@
 using SlimDX;
 using System.Drawing;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
@@ -11,7 +12,7 @@ namespace AirTableHockeyGame
         public Vector3 Position { get; set; }
         public Vector3 Velocity { get; set; }
         public float BouncingFactor { get; set; } = 0.7f;
-        public Shape DrawingShape { get; set; }
+        public UIElement DrawingShape { get; set; }
         public float Mass { get; set; }
         public bool IsMoving { get; set; }
         public float Radius { get; set; }
